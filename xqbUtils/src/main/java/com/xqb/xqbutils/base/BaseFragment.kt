@@ -25,26 +25,26 @@ import java.lang.reflect.ParameterizedType
 * fragment基类
 * */
 abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
-    var binding:V?=null
-    var viewModel:VM?=null
-    var activity:Activity?=null
-    var rootView: View?=null
+    lateinit var binding:V
+    lateinit var viewModel:VM
+    lateinit var activity:Activity
+    lateinit var rootView: View
     val perfUtil by lazy { PerfUtil(requireActivity()) }
     val gson by lazy { Gson() }
     
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        this.activity=getActivity()
+        this.activity=requireActivity()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         this.tryCreateViewBindingAndViewModel(container)
-        if (this.binding != null) {
-            this.rootView = this.binding!!.root
+        if (this.binding!=null) {
+            this.rootView = this.binding.root
         } else {
             this.rootView = inflater.inflate(this.setContentLayoutId(), container, false)
-            this.rootView!!.isClickable = true
+            this.rootView.isClickable = true
         }
         if(enableEventBus()){
             EventBusUtils.register(this)
@@ -77,7 +77,6 @@ abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        this.binding=null
         if(enableEventBus()){
             EventBusUtils.unregister(this)
         }
@@ -85,8 +84,6 @@ abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        this.rootView=null
-        this.viewModel=null
     }
 
 
@@ -134,16 +131,16 @@ abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
      * 针对viewModel做一些交互封装
      * */
     private fun viewModelHelper(){
-        viewModel?.toastMessage?.observe(viewLifecycleOwner,{
+        viewModel.toastMessage.observe(viewLifecycleOwner) {
             showToast(it)
-        })
-        viewModel?.progressMessage?.observe(viewLifecycleOwner,{
-            if(it=="dismiss"){
+        }
+        viewModel.progressMessage.observe(viewLifecycleOwner) {
+            if (it == "dismiss") {
                 dismissProgress()
-            }else{
+            } else {
                 showProgress(it)
             }
-        })
+        }
     }
 
     /**

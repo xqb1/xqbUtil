@@ -26,8 +26,8 @@ import java.lang.reflect.Type
  */
 abstract class BaseActivity<V:ViewDataBinding,VM: BaseViewModel> :AppCompatActivity() {
 
-    var binding: V? = null
-    var viewModel: VM? = null
+    lateinit var binding: V
+    lateinit var viewModel: VM
     val perfUtil by lazy { PerfUtil(this)}
     val gson by lazy { Gson()}
 
@@ -37,7 +37,7 @@ abstract class BaseActivity<V:ViewDataBinding,VM: BaseViewModel> :AppCompatActiv
         this.tryCreateViewBindingAndViewModel()
         this.viewModelHelper()
         if (this.binding != null) {
-            this.setContentView(this.binding!!.root)
+            this.setContentView(this.binding.root)
         } else {
             this.setContentView(this.setContentLayoutId())
         }
@@ -61,7 +61,6 @@ abstract class BaseActivity<V:ViewDataBinding,VM: BaseViewModel> :AppCompatActiv
                 if (types.isNotEmpty()) {
                     val inflate: Method = (types[0] as Class<*>).getDeclaredMethod("inflate", LayoutInflater::class.java)
                     this.binding = inflate.invoke(null as Any?, this.layoutInflater) as V
-//                    viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(application).create(types[1] as Class<VM>)  //这里不确定？？？
                     this.viewModel = ViewModelProvider(this).get(types[1] as Class<VM>)
                 }
             }
@@ -111,10 +110,10 @@ abstract class BaseActivity<V:ViewDataBinding,VM: BaseViewModel> :AppCompatActiv
      * 针对viewModel做一些交互封装
      * */
     private fun viewModelHelper(){
-        viewModel?.toastMessage?.observe(this) {
+        viewModel.toastMessage.observe(this) {
             showToast(it)
         }
-        viewModel?.progressMessage?.observe(this) {
+        viewModel.progressMessage.observe(this) {
             if (it == "dismiss") {
                 dismissProgress()
             } else {
