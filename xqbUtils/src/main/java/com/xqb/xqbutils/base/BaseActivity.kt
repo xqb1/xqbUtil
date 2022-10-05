@@ -62,8 +62,7 @@ abstract class BaseActivity<V:ViewDataBinding,VM: BaseViewModel> :AppCompatActiv
                     val inflate: Method = (types[0] as Class<*>).getDeclaredMethod("inflate", LayoutInflater::class.java)
                     this.binding = inflate.invoke(null as Any?, this.layoutInflater) as V
 //                    viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(application).create(types[1] as Class<VM>)  //这里不确定？？？
-                    this.viewModel = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(types[1] as Class<BaseViewModel>) as VM
-
+                    this.viewModel = ViewModelProvider(this).get(types[1] as Class<VM>)
                 }
             }
         } catch (var4: Throwable) {

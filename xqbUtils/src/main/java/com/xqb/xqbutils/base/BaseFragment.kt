@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.google.gson.Gson
 import com.xqb.xqbutils.dialogx.dialogs.WaitDialog
 import com.xqb.xqbutils.eventbus.Event
@@ -52,13 +53,14 @@ abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
     }
 
     private fun tryCreateViewBindingAndViewModel(parent: ViewGroup?) {
+        val owner: ViewModelStoreOwner=if(initViewModelOwner()) requireActivity() else this
         try {
             val type = this.javaClass.genericSuperclass
             if (type is ParameterizedType) {
                 val types = type.actualTypeArguments
                 if (types.isNotEmpty()) {
                     this.binding = (types[0] as Class<*>).getDeclaredMethod("inflate", LayoutInflater::class.java, ViewGroup::class.java, Boolean::class.java).invoke(null as Any?, this.layoutInflater,parent,false) as V
-                    this.viewModel = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(types[1] as Class<BaseViewModel>) as VM
+                    this.viewModel = ViewModelProvider(owner).get(types[1] as Class<VM>)
                 }
             }
         } catch (var5: Exception) {
@@ -92,6 +94,16 @@ abstract class BaseFragment<V:ViewDataBinding,VM: BaseViewModel> :Fragment() {
     abstract fun initView(savedInstanceState: Bundle?)
     open fun enableEventBus():Boolean{
         return false
+    }
+
+    /**
+    * 该ViewModel是否activity持有，
+     * true为activity持有（activity与fragment之间可以数据共享）
+     * false为fragment自身持有（单独实例，数据不能共享）
+     * 默认为true
+    * */
+    open fun initViewModelOwner(): Boolean{
+        return true
     }
 
     @Subscribe(threadMode= ThreadMode.MAIN)
